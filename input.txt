@@ -13,9 +13,3 @@ if (a < 100) {
 if (a == 90) {
     print("a is 90");
 }
-
-gh = 10;
-print(gh);
-
-gh = "hi";
-print(gh);

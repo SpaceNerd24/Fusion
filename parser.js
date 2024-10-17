@@ -67,7 +67,7 @@ class Parser {
     }
 
     parsePrintStatement() {
-        this.position++; // Skip 'print'
+        this.position++;
         const expression = this.parseExpression();
         const semicolon = this.tokens[this.position++];
 
