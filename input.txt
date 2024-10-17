@@ -1,0 +1,21 @@
+x = 42;
+y = x + 8;
+z = y * 2;
+if (z > 50) {
+    a = z - 10;
+    print(a);
+}
+
+if (a < 100) {
+    print("a is less than 100");
+}
+
+if (a == 90) {
+    print("a is 90");
+}
+
+gh = 10;
+print(gh);
+
+gh = "hi";
+print(gh);
