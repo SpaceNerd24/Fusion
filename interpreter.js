@@ -1,7 +1,11 @@
+const { Console } = require("console");
+
+// interpreter.js
 class Interpreter {
     constructor(ast) {
         this.ast = ast;
         this.environment = {};
+        this.functions = {};
     }
 
     interpret() {
@@ -24,6 +28,10 @@ class Interpreter {
         } else if (statement.type === 'PrintStatement') {
             const value = this.evaluateExpression(statement.expression);
             console.log(value);
+        } else if (statement.type === 'FunctionDefinition') {
+            this.functions[statement.name] = statement;
+        } else if (statement.type === 'FunctionCall') {
+            this.executeFunctionCall(statement);
         } else {
             throw new Error(`Unknown statement type: ${statement.type}`);
         }
@@ -65,6 +73,27 @@ class Interpreter {
         } else {
             throw new Error(`Unknown expression type: ${expression.type}`);
         }
+    }
+
+    executeFunctionCall(statement) {
+        const func = this.functions[statement.name];
+        if (!func) {
+            throw new Error(`Undefined function: ${statement.name}`);
+        }
+
+        const localEnv = {};
+        for (let i = 0; i < func.parameters.length; i++) {
+            localEnv[func.parameters[i]] = this.evaluateExpression(statement.arguments[i]);
+        }
+
+        const previousEnv = this.environment;
+        this.environment = localEnv;
+
+        for (const stmt of func.body) {
+            this.executeStatement(stmt);
+        }
+
+        this.environment = previousEnv;
     }
 }
 

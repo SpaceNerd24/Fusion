@@ -1,3 +1,4 @@
+// parser.js
 class Parser {
     constructor(tokens) {
         this.tokens = tokens;
@@ -16,11 +17,17 @@ class Parser {
         const token = this.tokens[this.position];
 
         if (token.type === 'IDENTIFIER') {
-            return this.parseAssignment();
+            if (this.tokens[this.position + 1] && this.tokens[this.position + 1].type === 'LPAREN') {
+                return this.parseFunctionCall();
+            } else {
+                return this.parseAssignment();
+            }
         } else if (token.type === 'IF') {
             return this.parseIfStatement();
         } else if (token.type === 'PRINT') {
             return this.parsePrintStatement();
+        } else if (token.type === 'FUNCTION') {
+            return this.parseFunctionDefinition();
         } else {
             throw new Error(`Unexpected token: ${token.type}`);
         }
@@ -78,6 +85,75 @@ class Parser {
         return {
             type: 'PrintStatement',
             expression: expression
+        };
+    }
+
+    parseFunctionDefinition() {
+        this.position++; // Skip 'function'
+        const name = this.tokens[this.position++];
+        const lparen = this.tokens[this.position++];
+
+        if (lparen.type !== 'LPAREN') {
+            throw new Error('Expected ( after function name');
+        }
+
+        const parameters = [];
+        while (this.tokens[this.position].type !== 'RPAREN') {
+            parameters.push(this.tokens[this.position++].value);
+            if (this.tokens[this.position].type === 'COMMA') {
+                this.position++;
+            }
+        }
+
+        this.position++; // Skip ')'
+        const lbrace = this.tokens[this.position++];
+
+        if (lbrace.type !== 'LBRACE') {
+            throw new Error('Expected { after function parameters');
+        }
+
+        const body = [];
+        while (this.tokens[this.position].type !== 'RBRACE') {
+            body.push(this.parseStatement());
+        }
+
+        this.position++; // Skip '}'
+
+        return {
+            type: 'FunctionDefinition',
+            name: name.value,
+            parameters: parameters,
+            body: body
+        };
+    }
+
+    parseFunctionCall() {
+        const name = this.tokens[this.position++];
+        const lparen = this.tokens[this.position++];
+
+        if (lparen.type !== 'LPAREN') {
+            throw new Error('Expected ( after function name');
+        }
+
+        const args = [];
+        while (this.tokens[this.position].type !== 'RPAREN') {
+            args.push(this.parseExpression());
+            if (this.tokens[this.position].type === 'COMMA') {
+                this.position++;
+            }
+        }
+
+        this.position++; // Skip ')'
+        const semicolon = this.tokens[this.position++];
+
+        if (semicolon.type !== 'SEMICOLON') {
+            throw new Error('Expected ; after function call');
+        }
+
+        return {
+            type: 'FunctionCall',
+            name: name.value,
+            arguments: args
         };
     }
 

@@ -1,3 +1,4 @@
+// lexer.js
 class Lexer {
     constructor(input) {
         this.input = input;
@@ -58,6 +59,9 @@ class Lexer {
             } else if (char === '<') {
                 this.tokens.push({ type: 'LESS_THAN', value: char });
                 this.position++;
+            } else if (char === ',') {
+                this.tokens.push({ type: 'COMMA', value: char });
+                this.position++;
             } else {
                 throw new Error(`Unexpected character: ${char}`);
             }
@@ -84,6 +88,8 @@ class Lexer {
             return { type: 'IF', value: value };
         } else if (value === 'print') {
             return { type: 'PRINT', value: value };
+        } else if (value === 'function') {
+            return { type: 'FUNCTION', value: value };
         }
         return { type: 'IDENTIFIER', value: value };
     }
