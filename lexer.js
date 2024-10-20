@@ -90,6 +90,8 @@ class Lexer {
             return { type: 'PRINT', value: value };
         } else if (value === 'function') {
             return { type: 'FUNCTION', value: value };
+        } else if (value === 'import') {
+            return { type: 'IMPORT', value: value };
         }
         return { type: 'IDENTIFIER', value: value };
     }

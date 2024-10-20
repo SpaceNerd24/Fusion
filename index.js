@@ -13,5 +13,3 @@ const ast = parser.parse();
 
 const interpreter = new Interpreter(ast);
 interpreter.interpret();
-
-//console.log(lexer.tokens);

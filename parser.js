@@ -16,7 +16,9 @@ class Parser {
     parseStatement() {
         const token = this.tokens[this.position];
 
-        if (token.type === 'IDENTIFIER') {
+        if (token.type === 'IMPORT') {
+            return this.parseImportStatement();
+        } else if (token.type === 'IDENTIFIER') {
             if (this.tokens[this.position + 1] && this.tokens[this.position + 1].type === 'LPAREN') {
                 return this.parseFunctionCall();
             } else {
@@ -31,6 +33,21 @@ class Parser {
         } else {
             throw new Error(`Unexpected token: ${token.type}`);
         }
+    }
+
+    parseImportStatement() {
+        this.position++; // Skip 'import'
+        const fileNameToken = this.tokens[this.position++];
+        const semicolon = this.tokens[this.position++];
+    
+        if (semicolon.type !== 'SEMICOLON') {
+            throw new Error('Expected ; after import statement');
+        }
+    
+        return {
+            type: 'ImportStatement',
+            fileName: fileNameToken.value
+        };
     }
 
     parseAssignment() {

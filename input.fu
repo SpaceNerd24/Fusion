@@ -1,8 +1,11 @@
-x = 42;
-y = x + 8;
-z = y * 2;
-
-function add(a, b) {
-    result = a + b;
-    print(result);
+function add(a, b, r) {
+    r = a + b;
 }
+
+function main() {
+    x = 0;
+    add(1, 2, x);
+    print(x);
+}
+
+main();

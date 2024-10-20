@@ -1,4 +1,6 @@
-const { Console } = require("console");
+const fs = require('fs');
+const Lexer = require('./lexer');
+const Parser = require('./parser');
 
 // interpreter.js
 class Interpreter {
@@ -15,9 +17,12 @@ class Interpreter {
     }
 
     executeStatement(statement) {
-        if (statement.type === 'Assignment') {
-            const value = this.evaluateExpression(statement.expression);
-            this.environment[statement.identifier] = value;
+        if (statement.type === 'ImportStatement') {
+            this.executeImport(statement);
+        } else if (statement.type === 'Assignment') {
+         const value = this.evaluateExpression(statement.expression);
+        // Directly assign to the environment, which is global
+        this.environment[statement.identifier] = value;
         } else if (statement.type === 'IfStatement') {
             const condition = this.evaluateExpression(statement.condition);
             if (condition) {
@@ -80,20 +85,52 @@ class Interpreter {
         if (!func) {
             throw new Error(`Undefined function: ${statement.name}`);
         }
-
-        const localEnv = {};
+    
+        // Create a local environment for the function call
+        const localEnv = { ...this.environment };
+    
         for (let i = 0; i < func.parameters.length; i++) {
-            localEnv[func.parameters[i]] = this.evaluateExpression(statement.arguments[i]);
+            const paramName = func.parameters[i];
+            const argValue = this.evaluateExpression(statement.arguments[i]);
+    
+            // Assign the argument value directly to the local environment
+            localEnv[paramName] = argValue;
         }
-
+    
+        // Temporarily set the environment to the local one
         const previousEnv = this.environment;
         this.environment = localEnv;
-
+    
         for (const stmt of func.body) {
             this.executeStatement(stmt);
         }
-
+    
+        // Restore the previous environment
         this.environment = previousEnv;
+    
+        // Update global environment if the parameter name matches a variable
+        for (const param of func.parameters) {
+            if (previousEnv.hasOwnProperty(param)) {
+                previousEnv[param] = localEnv[param];
+            }
+        }
+    }
+
+    executeImport(statement) {
+        const fileName = statement.fileName;
+        const fileContent = fs.readFileSync(fileName, 'utf-8');
+
+        const lexer = new Lexer(fileContent);
+        const tokens = lexer.tokenize();
+
+        const parser = new Parser(tokens);
+        const ast = parser.parse();
+
+        const interpreter = new Interpreter(ast);
+        interpreter.interpret();
+
+        // Import functions into the current environment
+        Object.assign(this.functions, interpreter.functions);
     }
 }
 
