@@ -1,11 +1,9 @@
-function add(a, b, r) {
-    r = a + b;
-}
+import "./system.fu";
 
 function main() {
     x = 0;
-    add(1, 2, x);
-    print(x);
+    add(1, 2);
+    print(result);
 }
 
 main();

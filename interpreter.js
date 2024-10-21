@@ -20,9 +20,9 @@ class Interpreter {
         if (statement.type === 'ImportStatement') {
             this.executeImport(statement);
         } else if (statement.type === 'Assignment') {
-         const value = this.evaluateExpression(statement.expression);
-        // Directly assign to the environment, which is global
-        this.environment[statement.identifier] = value;
+            const value = this.evaluateExpression(statement.expression);
+            // Directly assign to the environment, which is global
+            this.environment[statement.identifier] = value;
         } else if (statement.type === 'IfStatement') {
             const condition = this.evaluateExpression(statement.condition);
             if (condition) {
@@ -85,33 +85,33 @@ class Interpreter {
         if (!func) {
             throw new Error(`Undefined function: ${statement.name}`);
         }
-    
+
         // Create a local environment for the function call
         const localEnv = { ...this.environment };
-    
+
         for (let i = 0; i < func.parameters.length; i++) {
             const paramName = func.parameters[i];
             const argValue = this.evaluateExpression(statement.arguments[i]);
-    
+
             // Assign the argument value directly to the local environment
             localEnv[paramName] = argValue;
         }
-    
+
         // Temporarily set the environment to the local one
         const previousEnv = this.environment;
         this.environment = localEnv;
-    
+
         for (const stmt of func.body) {
             this.executeStatement(stmt);
         }
-    
+
         // Restore the previous environment
         this.environment = previousEnv;
-    
-        // Update global environment if the parameter name matches a variable
-        for (const param of func.parameters) {
-            if (previousEnv.hasOwnProperty(param)) {
-                previousEnv[param] = localEnv[param];
+
+        // Update global environment with any changes made to variables that exist in the global environment
+        for (const key in localEnv) {
+            if (previousEnv.hasOwnProperty(key)) {
+                previousEnv[key] = localEnv[key];
             }
         }
     }
@@ -131,6 +131,9 @@ class Interpreter {
 
         // Import functions into the current environment
         Object.assign(this.functions, interpreter.functions);
+
+        // Import variables into the current environment
+        Object.assign(this.environment, interpreter.environment);
     }
 }
 
